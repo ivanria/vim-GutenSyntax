@@ -26,6 +26,7 @@ function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
 
 endfunction
 
+
 " Callback from job_start functiin (job is pid of process, status is number
 " returned from pipe l:cmd = 'set -o pipefail; sed -En ... | sort -u > ...
 function! gutensyntax#SyntaxUpdateCB(job, status) abort
@@ -38,9 +39,7 @@ function! gutensyntax#SyntaxUpdateCB(job, status) abort
             call gutentags#trace("Syntax: skip update (buffer empty)")
 	    return 0
 	else
-            execute 'silent! source ' . g:glob_syntax_file
-            highlight link MyCustomType Type
-            highlight link MyCustomMacro PreProc
+            call GutenColorAplly()
             call gutentags#trace("Syntax: updated from " . g:glob_syntax_file)
 	    call gutentags#trace("Syntax: it worked well!!!")
 	    return 0
@@ -51,3 +50,14 @@ function! gutensyntax#SyntaxUpdateCB(job, status) abort
     endif
 endfunction
 
+
+function! s:IsFileInProject() abort
+    return exist('b:gutentags_root') && !empty(b:gutentags_root)
+endfunction
+
+
+function! GutenColorApply() abort
+    execute 'silent! source ' . g:glob_syntax_file
+    highlight link MyCustomType Type
+    highlight link MyCustomMacro PreProc
+endfunction
