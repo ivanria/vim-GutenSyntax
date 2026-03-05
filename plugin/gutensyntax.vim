@@ -1,0 +1,10 @@
+
+if exists('g:loaded_gutentags_syntax') | finish | endif
+let g:loaded_gutentags_syntax = 1
+
+" Default vim syntax file. Located at the root of your project
+" You can set the syntax file name in g:local_syntax_file variable in .vimrc
+if !exists('g:local_syntax_file')
+    let g:local_syntax_file = 'local_syntax.vim'
+endif
+
