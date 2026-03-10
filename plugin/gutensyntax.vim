@@ -8,3 +8,7 @@ if !exists('g:local_syntax_file')
     let g:local_syntax_file = 'local_syntax.vim'
 endif
 
+highlight default link MyCustomCType Type
+highlight default link MyCustomCMacro PreProc
+
+
