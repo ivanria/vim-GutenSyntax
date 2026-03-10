@@ -321,9 +321,9 @@ function! gutentags#setup_gutentags() abort
     " Original Gutentags by Ludovic Chabant
     " Modifications for Syntax Auto-Update by Ivan Riabtsov, 2025
     " Licensed under MIT.
-    if exists('g:glob_syntax_file') && filereadable(g:glob_syntax_file)
-        call gutentags#trace("Syntax: update for this buffer")
+    if gutensyntax#IsFileInProject()
         execute 'silent! source ' . g:glob_syntax_file
+        call gutentags#trace("Syntax: update for this buffer")
     endif
 
     " Autocommands for updating the tags on save.

@@ -5,10 +5,10 @@ function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
     let l:syntax_file = g:local_syntax_file
     let l:tag_file_size = getfsize(a:src_tags_file)
     if l:tag_file_size == -1
-        call gutentags#trace("Syntax: tags_file " . a:src_tags_file . " not found")
+        call gutentags#trace("GutenSyntax: tags_file " . a:src_tags_file . " not found")
         return
     elseif l:tag_file_size == 0 && !isdirectory(a:src_tags_file)
-        call gutentags#trace("Syntax: tags_file " . a:src_tags_file . " null sized")
+        call gutentags#trace("GutenSyntax: tags_file " . a:src_tags_file . " null sized")
 	return
     endif
 
@@ -31,33 +31,55 @@ endfunction
 " returned from pipe l:cmd = 'set -o pipefail; sed -En ... | sort -u > ...
 function! gutensyntax#SyntaxUpdateCB(job, status) abort
     if a:status != 0
-        call gutentags#trace("Syntax: [SKIP/ERROR] code: " . a:status)
+        call gutentags#trace("GutenSyntax: [SKIP/ERROR] code: " . a:status)
         return a:status
     endif	
     if a:status == 0 && getfsize(g:glob_syntax_file) > 0
         if empty(expand("%"))
-            call gutentags#trace("Syntax: skip update (buffer empty)")
-	    return 0
+            call gutentags#trace("GutenSyntax: skip update (buffer empty)")
+	    return 1
 	else
-            call GutenColorAplly()
-            call gutentags#trace("Syntax: updated from " . g:glob_syntax_file)
-	    call gutentags#trace("Syntax: it worked well!!!")
-	    return 0
+            let l:current_win = win_getid()
+	    noautocmd windo execute 'if gutensyntax#IsFileInProject() | call gutensyntax#GutenColorApply() | endif'
+	    call gutentags#trace("GutenSyntax: it worked well!!!")
+            call win_gotoid(l:current_win)
+	    return 1
         endif
     elseif getfsize(g:glob_syntax_file) == 0 && !isdirectory(g:glob_syntax_file)
-        call gutentags#trace("Syntax: nothing to highlight, file is null")
-	return 0
+        call gutentags#trace("GutenSyntax: nothing to highlight, file is null")
+	return 1
     endif
 endfunction
 
 
-function! s:IsFileInProject() abort
-    return exist('b:gutentags_root') && !empty(b:gutentags_root)
+function! gutensyntax#IsFileInProject() abort
+    if !exists('b:gutentags_root') || empty(b:gutentags_root)
+        return 0
+    endif
+
+    if !exists('g:glob_syntax_file') || empty(g:glob_syntax_file)
+        return 0
+    endif
+
+    let l:syn_f_size = getfsize(g:glob_syntax_file)
+    if l:syn_f_size == 0 && !isdirectory(g:glob_syntax_file)
+        call gutentags#trace("GutenSyntax: nothing to highlight, file is null")
+        return 0
+    elseif l:syn_f_size == -1
+        call gutentags#trace("GutenSyntax: Syntax file: " . g:glob_syntax_file . " not found")
+        return 0
+    endif
+
+    return 1 
 endfunction
 
 
-function! GutenColorApply() abort
+function! gutensyntax#GutenColorApply() abort
+    if empty(expand('%'))
+        call gutentags#trace("GutenSyntax: skip update (buffer empty)")
+        return 1
+    endif
     execute 'silent! source ' . g:glob_syntax_file
-    highlight link MyCustomType Type
-    highlight link MyCustomMacro PreProc
+    call gutentags#trace("GutenSyntax: updated from " . g:glob_syntax_file)
 endfunction
+
