@@ -15,7 +15,7 @@ function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
     let l:full_path_syn_file = a:path . '/' . l:syntax_file
     let g:glob_syntax_file = l:full_path_syn_file
         
-    let l:cmd = 'set -o pipefail; sed -En "s/^([^\t]+)[[:space:]].*[[:space:]][tsgu]([[:space:]]|$).*$/syntax keyword MyCustomType \1/p ; s/^([^\t]+)[[:space:]].*[[:space:]][de]([[:space:]]|$).*$/syntax keyword MyCustomMacro \1/p" ' . a:src_tags_file . ' | sort -u > ' . l:full_path_syn_file
+    let l:cmd = 'set -o pipefail; sed -En "s/^([^\t]+)[[:space:]].*[[:space:]][tsgu]([[:space:]]|$).*$/syntax keyword MyCustomCType \1/p ; s/^([^\t]+)[[:space:]].*[[:space:]][de]([[:space:]]|$).*$/syntax keyword MyCustomCMacro \1/p" ' . a:src_tags_file . ' | sort -u > ' . l:full_path_syn_file
         
     call job_start(['/bin/sh', '-c', l:cmd], { 
         \'exit_cb': 'gutensyntax#SyntaxUpdateCB',
