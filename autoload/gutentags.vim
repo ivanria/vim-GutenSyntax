@@ -323,7 +323,7 @@ function! gutentags#setup_gutentags() abort
     " Licensed under MIT.
     if gutensyntax#IsFileInProject()
         execute 'silent! source ' . g:glob_syntax_file
-        call gutentags#trace("Syntax: update for this buffer")
+        call gutentags#trace("GutenSyntax: update for this buffer")
     endif
 
     " Autocommands for updating the tags on save.
