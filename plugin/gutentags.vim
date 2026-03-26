@@ -2,6 +2,22 @@
 " Maintainer:   Ludovic Chabant <http://ludovic.chabant.com>
 " Version:      2.0.0
 
+
+" Gutentags Syntax Auto-Update Extension
+" Original Gutentags by Ludovic Chabant
+" Modifications for Syntax Auto-Update by Ivan Riabtsov, 2025
+" Licensed under MIT.
+" I rewrote the default gutentags variables
+let g:gutentags_add_default_project_roots = "0"
+let g:gutentags_project_root = ['__gutentags_enable_file']
+let g:gutentags_ctags_tagfile = "__ctags_syntax_src"
+let g:gutentags_ctags_extra_args = ['--tag-relative=no', '--fields=+a', '--languages=C,C++,Make,Yacc,Flex']
+let g:gutentags_generate_on_new = "1"
+let g:gutentags_generate_on_missing = "1"
+let g:gutentags_generate_on_write = "1"
+let g:gutentags_generate_on_empty_buffer = "1"
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " Globals {{{
 
 if (&cp || get(g:, 'gutentags_dont_load', 0))
