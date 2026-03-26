@@ -11,7 +11,7 @@
 let g:gutentags_add_default_project_roots = "0"
 let g:gutentags_project_root = ['__gutentags_enable_file']
 let g:gutentags_ctags_tagfile = "__ctags_syntax_src"
-let g:gutentags_ctags_extra_args = ['--tag-relative=no', '--fields=+a', '--languages=C,C++,Make,Yacc,Flex']
+let g:gutentags_ctags_extra_args = ['--languages=C,C++,Make,Yacc,Flex']
 let g:gutentags_generate_on_new = "1"
 let g:gutentags_generate_on_missing = "1"
 let g:gutentags_generate_on_write = "1"

@@ -206,12 +206,6 @@ function! gutentags#ctags#generate(proj_dir, tags_file, gen_opts) abort
     call gutentags#trace("In:      " . getcwd())
     if !g:gutentags_fake
         let l:job_opts = gutentags#build_default_job_options('ctags')
-
-        " Gutentags Syntax Auto-Update Extension
-        " Original Gutentags by Ludovic Chabant
-        " Modifications for Syntax Auto-Update by Ivan Riabtsov, 2025
-        " Licensed under MIT.
-        call gutensyntax#BackupTagsFile(l:actual_tags_file)
         let l:job = gutentags#start_job(l:cmd, l:job_opts)
         call gutentags#add_job('ctags', a:tags_file, l:job)
     else

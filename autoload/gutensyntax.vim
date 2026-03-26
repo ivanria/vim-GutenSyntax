@@ -16,7 +16,7 @@ function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
     let g:glob_syntax_file = l:full_path_syn_file
     call gutentags#trace("GutenSyntax: generate syntax file: " . l:syntax_file)
         
-    let l:cmd = 'set -o pipefail; sed -En "s/^([^\t]+)[[:space:]].*[[:space:]][tsgu]([[:space:]]|$).*$/syntax keyword MyCustomCType \1/p ; s/^([^\t]+)[[:space:]].*[[:space:]][de]([[:space:]]|$).*$/syntax keyword MyCustomCMacro \1/p" ' . a:src_tags_file . ' | sort -u > ' . l:full_path_syn_file
+    let l:cmd = 'export LC_ALL=C ; echo "syntax clear MyCustomCType" > ' . l:full_path_syn_file . ' ; echo "syntax clear MyCustomCMacro" >> ' . l:full_path_syn_file . ' ; set -o pipefail; sed -En "s/^([^\t]+)[[:space:]].*[[:space:]][tsgu]([[:space:]]|$).*$/syntax keyword MyCustomCType \1/p ; s/^([^\t]+)[[:space:]].*[[:space:]][de]([[:space:]]|$).*$/syntax keyword MyCustomCMacro \1/p" ' . a:src_tags_file . ' | sort -u >> ' . l:full_path_syn_file
         
     call job_start(['/bin/sh', '-c', l:cmd], { 
         \'exit_cb': 'gutensyntax#SyntaxUpdateCB',
@@ -27,20 +27,20 @@ function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
 
 endfunction
 
-function! gutensyntax#BackupTagsFile(tags_file) abort
-    let l:back_file = a:tags_file . '.old'
-    let l:tags_file_size = getfsize(a:tags_file)
-    if l:tags_file_size == 0 && !isdirectory(a:tags_file)
-        call system('cp ' . shellescape(a:tags_file) . ' ' . shellescape(l:back_file))
-        call gutentags#trace("GutenSyntax: tags file: " . a:tags_file . " is null size")
-    elseif l:tags_file_size == -1
-        call gutentags#trace("GutenSyntax: tags file: " . a:tags_file . " not found")
-        return
-    else
-        call system('cp ' . shellescape(a:tags_file) . ' ' . shellescape(l:back_file))
-    endif
-    call gutentags#trace("GutenSyntax: move" . a:tags_file . " to: " . l:back_file . "!!!!")
-endfunction
+"function! gutensyntax#BackupTagsFile(tags_file) abort
+    "let l:back_file = a:tags_file . '.old'
+    "let l:tags_file_size = getfsize(a:tags_file)
+    "if l:tags_file_size == 0 && !isdirectory(a:tags_file)
+        "call system('cp ' . shellescape(a:tags_file) . ' ' . shellescape(l:back_file))
+        "call gutentags#trace("GutenSyntax: tags file: " . a:tags_file . " is null size")
+    "elseif l:tags_file_size == -1
+        "call gutentags#trace("GutenSyntax: tags file: " . a:tags_file . " not found")
+        "return
+    "else
+        "call system('cp ' . shellescape(a:tags_file) . ' ' . shellescape(l:back_file))
+    "endif
+    "call gutentags#trace("GutenSyntax: move" . a:tags_file . " to: " . l:back_file . "!!!!")
+"endfunction
 
 " Callback from job_start functiin (job is pid of process, status is number
 " returned from pipe l:cmd = 'set -o pipefail; sed -En ... | sort -u > ...
@@ -51,15 +51,13 @@ function! gutensyntax#SyntaxUpdateCB(job, status) abort
     endif	
     if a:status == 0 && getfsize(g:glob_syntax_file) > 0
         if empty(expand("%"))
-            call gutentags#trace("GutenSyntax: skip update (buffer empty)")
 	    return 1
 	else
-            let l:current_win = win_getid()
-	    let l:current_tab = tabpagenr()
-	    noautocmd tabdo windo execute 'if gutensyntax#IsFileInProject() | call gutensyntax#GutenColorApply() | endif'
-	    execute 'tabnext ' . l:current_tab
-            call win_gotoid(l:current_win)
-	    call gutentags#trace("GutenSyntax: it worked well!!!")
+            for l:win in getwininfo()
+                " win_execute доступен в Vim 8.1.1418+ и Vim 9
+                call win_execute(l:win.winid, 'if gutensyntax#IsFileInProject() | call gutensyntax#GutenColorApply() | endif')
+            endfor
+            call gutentags#trace("GutenSyntax: silent update via win_execute done")
 	    return 1
         endif
     elseif getfsize(g:glob_syntax_file) == 0 && !isdirectory(g:glob_syntax_file)
@@ -100,3 +98,10 @@ function! gutensyntax#GutenColorApply() abort
     call gutentags#trace("GutenSyntax: updated from " . g:glob_syntax_file)
 endfunction
 
+
+            "let l:current_win = win_getid()
+	    "let l:current_tab = tabpagenr()
+	    "noautocmd tabdo windo execute 'if gutensyntax#IsFileInProject() | call gutensyntax#GutenColorApply() | endif'
+	    "execute 'tabnext ' . l:current_tab
+            "call win_gotoid(l:current_win)
+	    "call gutentags#trace("GutenSyntax: it worked well!!!")
