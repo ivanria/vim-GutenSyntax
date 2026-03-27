@@ -1,0 +1,93 @@
+
+*gutensyntax.txt*  Dynamic Syntax Highlighting via Tags
+
+GUTENSYNTAX                                         *gutensyntax*
+
+GutenSyntax is a modified version of vim-gutentags that provides
+automatic syntax highlighting for user-defined types and macros.
+
+Original Plugin: https://github.com/ludovicchabant/vim-gutentags
+Author: Ludovic Chabant
+Modified by: Ivan Riabtsov (2025)
+GutenSyntax Plugin: https://github.com/ivanria/vim-GutenSyntax
+
+==============================================================================
+1. OVERVIEW                                         *gutensyntax-overview*
+
+GutenSyntax scans your project tags and creates a local syntax file named
+`__local_syntax.vim`. It highlights:
+- Structs, Unions, Enums, Typedefs (as |Type|)
+- Macros and Defines (as |PreProc|)
+
+The update process is asynchronous and will not block the editor.
+
+==============================================================================
+2. HARDCODED SETTINGS                             *gutensyntax-settings*
+
+To simplify usage, this fork overrides several Gutentags variables in
+`plugin/gutentags.vim`. These values take priority over `.vimrc`:
+
+g:gutentags_project_root            ['__gutentags_enable_file']
+    The plugin only activates if this file exists in the project root.
+
+g:gutentags_ctags_tagfile           "__ctags_syntax_src"
+    The name of the generated tags file used for syntax parsing.
+
+g:gutentags_ctags_extra_args        ['--languages=C,C++,Make,Yacc,Flex']
+    Filters the types of files scanned.
+
+g:gutentags_generate_on_new         	1
+g:gutentags_generate_on_missing     	1
+g:gutentags_generate_on_write       	1
+g:gutentags_generate_on_empty_buffer	1
+    Controls when the syntax update is triggered.
+
+To change these, you must modify `plugin/gutentags.vim` directly.
+
+==============================================================================
+3. CUSTOMIZATION                                    *gutensyntax-custom*
+
+You can change the name of the generated syntax file in your `.vimrc`:
+
+    let g:local_syntax_file = "__my_syntax.vim"
+
+To change colors, link the custom groups to different highlights:
+
+    highlight link MyCustomCType Identifier
+    highlight link MyCustomCMacro Constant
+
+==============================================================================
+4. EXTENDING SYNTAX GROUPS                         *gutensyntax-extend*
+
+To highlight additional entities like functions (tag type 'f'), follow
+these steps:
+
+1. Update the generation command in `autoload/gutensyntax.vim`:
+
+   In the `l:cmd` variable, add a new sed pattern:
+   >
+   s/^([^\t]+)[[:space:]].*[[:space:]]f([[:space:]]|$).*$/syntax keyword MyCustomCFunc \1/p
+   <
+
+   IMPORTANT: You must also add the clear command at the start of `l:cmd`:
+   >
+   echo "syntax clear MyCustomCFunc";
+   <
+
+2. Define the highlight link in `plugin/gutensyntax.vim`:
+   >
+   highlight default link MyCustomCFunc Function
+   <
+   (You can use |Function|, |Statement|, or any other preferred group).
+
+3. The next time Gutentags updates, your functions will be highlighted.
+
+==============================================================================
+5. ACKNOWLEDGMENTS                                    *gutensyntax-credits*
+
+GutenSyntax is built upon the foundation of vim-gutentags. Special thanks to
+Ludovic Chabant for creating such a powerful tool that makes code navigation
+truly seamless and professional.
+
+==============================================================================
+vim:tw=78:et:ft=help:norl:

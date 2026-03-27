@@ -3,12 +3,12 @@
 
 **vim-GutenSyntax** is an automated, asynchronous syntax highlighting extension for Vim 9.1+. It is a specialized fork of [vim-gutentags](https://github.com) by Ludovic Chabant.
 
-While the original Gutentags focuses on tag-based navigation, **GutenSyntax** leverages those tags to dynamically generate and apply syntax highlighting for your project's custom `struct`, `union`, `enum`, and `#define` declarations.
+While the original Gutentags focuses on tag-based navigation, **GutenSyntax** leverages those tags to dynamically generate and apply syntax highlighting for your project's custom `struct`, `union`, `enum`, `typedef`, and `#define` declarations.
 
 ## Key Features
 
 *   **Dynamic Highlighting**: Automatically colors your custom types and macros as you define them.
-*   **Asynchronous**: Uses Vim 9 jobs to parse tags in the background—no UI freezes, even on the Linux Kernel.
+*   **Asynchronous**: Uses Vim 9 jobs to parse tags in the background—no UI freezes, on projects up to ~100,000 lines.
 *   **Self-Cleaning**: Automatically removes highlighting for deleted code (no "phantom" tags).
 *   **Zero-Config for C**: Hardcoded defaults optimized for C, C++, Yacc, and Flex.
 
@@ -36,6 +36,23 @@ To ensure consistent behavior, the following `gutentags` variables are pre-set w
 2. Ensure `ctags` (Universal Ctags recommended) is installed.
 3. To enable the plugin for a project, create an empty file named `__gutentags_enable_file` in the project root.
 
+## Extending Highlighting (Advanced)
+
+By default, GutenSyntax highlights Types and Macros. You can extend this to functions or other tags by modifying the `sed` command in `autoload/gutensyntax.vim`.
+
+### Example: Adding Function Highlighting
+1.  **Modify the `sed` command**: Add a pattern for `f` (functions):
+    `s/^([^\t]+)[[:space:]].*[[:space:]]f([[:space:]]|$).*$/syntax keyword MyCustomCFunc \1/p`
+2.  **Add Clear Command**: Ensure you add `echo "syntax clear MyCustomCFunc";` to the `l:cmd` string.
+3.  **Link the Highlight**: In `plugin/gutensyntax.vim`, add:
+    `highlight default link MyCustomCFunc Function`
+
 ## License
 
 Modified by Ivan Riabtsov (2025). Licensed under the MIT license (same as original vim-gutentags).
+
+## Credits & Acknowledgments
+
+This project is a specialized extension of the excellent [vim-gutentags](https://github.com/ludovicchabant/vim-gutentags) plugin. 
+
+I would like to express my sincere gratitude to **Ludovic Chabant**, the original author. His work has made code navigation in Vim incredibly convenient and efficient.
