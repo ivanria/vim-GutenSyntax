@@ -1,5 +1,4 @@
-
-*gutensyntax.txt*  Dynamic Syntax Highlighting via Tags
+*gutensyntax.txt*  v1.0.0  Dynamic Syntax Highlighting via Tags
 
 GUTENSYNTAX                                         *gutensyntax*
 

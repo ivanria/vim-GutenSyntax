@@ -1,3 +1,5 @@
+" Version:      1.0.0
+" Last Change:  2026.03.27
 
 if exists('g:loaded_gutentags_syntax') | finish | endif
 let g:loaded_gutentags_syntax = 1
