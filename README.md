@@ -51,6 +51,13 @@ By default, GutenSyntax highlights Types and Macros. You can extend this to func
 
 Modified by Ivan Riabtsov (2025). Licensed under the MIT license (same as original vim-gutentags).
 
+## Feedback & Contributing
+
+If you encounter any bugs, have questions, or want to suggest an optimization:
+1. Open an **Issue** for bug reports.
+2. Use **Discussions** for general questions.
+3. Feel free to submit a **Pull Request**!
+
 ## Credits & Acknowledgments
 
 This project is a specialized extension of the excellent [vim-gutentags](https://github.com/ludovicchabant/vim-gutentags) plugin. 
