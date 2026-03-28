@@ -51,8 +51,26 @@ By default, GutenSyntax highlights Types and Macros. You can extend this to func
 
 Modified by Ivan Riabtsov (2025). Licensed under the MIT license (same as original vim-gutentags).
 
+## Feedback & Contributing
+
+If you encounter any bugs, have questions, or want to suggest an optimization:
+1. Open an **Issue** for bug reports.
+2. Use **Discussions** for general questions.
+3. Feel free to submit a **Pull Request**!
+
 ## Credits & Acknowledgments
 
 This project is a specialized extension of the excellent [vim-gutentags](https://github.com/ludovicchabant/vim-gutentags) plugin. 
 
 I would like to express my sincere gratitude to **Ludovic Chabant**, the original author. His work has made code navigation in Vim incredibly convenient and efficient.
+
+## Future Roadmap (v1.0.1)
+
+I am currently refactoring the core engine to move beyond "hardcoded" C defaults toward a high-performance, modular framework. Planned features include:
+
+*   **RAM-Disk Execution**: Moving all temporary syntax generation to `/tmp` (tmpfs). This eliminates physical disk I/O on your HDD/SSD, boosting speed and preserving hardware life.
+*   **Parallel Entity Parsing**: Instead of a single process, the plugin will spawn independent background jobs for each code entity (Types, Macros, Functions). These will run concurrently, utilizing multiple CPU cores for near-instant updates even on massive codebases.
+*   **Declarative Mapping & Dynamic Callbacks**: A new configuration system that allows users to define custom highlighting rules via a simple List of Lists (Tuples).
+    *   *Example:* `['MyCustomCType', 'tsgu', 'Type']`
+    *   **Automated Logic**: Based on your mapping, the plugin will **dynamically generate** the necessary background jobs and internal Vim callback functions on the fly. You no longer need to write boilerplate code to support new language entities; the engine builds the infrastructure for you.
+*   **Static System Highlighting**: One-time background indexing for system headers (e.g., `/usr/include`) to provide seamless highlighting for standard library types (like `mpz_t` from GMP or `pthread_t`). If you need it.
