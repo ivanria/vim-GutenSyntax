@@ -2,6 +2,18 @@
 " This function is called from a file ~/.vim/autoload/gutentags/ctags.vim
 " from function gutentags#ctags#on_job_exit()
 function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
+    if g:place_syntax_in_tmp == 1
+        let l:seed = localtime() + getpid()
+        let g:syntax_tmp_dir = '/tmp/vim-' . rand(srand(l:seed))
+        if !isdirectory(g:syntax_tmp_dir)
+            call mkdir(g:syntax_tmp_dir, "p", 0700)
+        endif
+    endif
+    "
+    "
+    "
+    "
+    "
     let l:syntax_file = g:local_syntax_file
     let l:tag_file_size = getfsize(a:src_tags_file)
     if l:tag_file_size == -1
@@ -27,20 +39,6 @@ function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
 
 endfunction
 
-"function! gutensyntax#BackupTagsFile(tags_file) abort
-    "let l:back_file = a:tags_file . '.old'
-    "let l:tags_file_size = getfsize(a:tags_file)
-    "if l:tags_file_size == 0 && !isdirectory(a:tags_file)
-        "call system('cp ' . shellescape(a:tags_file) . ' ' . shellescape(l:back_file))
-        "call gutentags#trace("GutenSyntax: tags file: " . a:tags_file . " is null size")
-    "elseif l:tags_file_size == -1
-        "call gutentags#trace("GutenSyntax: tags file: " . a:tags_file . " not found")
-        "return
-    "else
-        "call system('cp ' . shellescape(a:tags_file) . ' ' . shellescape(l:back_file))
-    "endif
-    "call gutentags#trace("GutenSyntax: move" . a:tags_file . " to: " . l:back_file . "!!!!")
-"endfunction
 
 " Callback from job_start functiin (job is pid of process, status is number
 " returned from pipe l:cmd = 'set -o pipefail; sed -En ... | sort -u > ...
@@ -99,9 +97,3 @@ function! gutensyntax#GutenColorApply() abort
 endfunction
 
 
-            "let l:current_win = win_getid()
-	    "let l:current_tab = tabpagenr()
-	    "noautocmd tabdo windo execute 'if gutensyntax#IsFileInProject() | call gutensyntax#GutenColorApply() | endif'
-	    "execute 'tabnext ' . l:current_tab
-            "call win_gotoid(l:current_win)
-	    "call gutentags#trace("GutenSyntax: it worked well!!!")
