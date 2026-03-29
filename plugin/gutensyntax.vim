@@ -10,14 +10,15 @@ let g:loaded_gutensyntax = "1"
 
 " Replace with a safer method with checking the type
 " of the variable's contents
-let g:gutensyntax_use_tmp = get(g:, 'gutensyntax_use_tmp', 1)
-if type(g:gutensyntax_use_tmp) != 0
+if !exists('g:gutensyntax_use_tmp')
+    let g:gutensyntax_use_tmp = 1
+elseif type(g:gutensyntax_use_tmp) != 0
     let g:gutensyntax_use_tmp = 1
 endif
 
 " Create uniq tmp dir if you use /tmp
 if g:gutensyntax_use_tmp == 1
-    let g:gs_syntax_tmp_dir = '/tmp/vim-' . rand(srand(l:seed))
+    let g:gs_syntax_tmp_dir = '/tmp/vim-gutensyntax-' . getpid()
     if !isdirectory(g:gs_syntax_tmp_dir)
         call mkdir(g:gs_syntax_tmp_dir, "p", 0700)
     endif
@@ -51,9 +52,9 @@ function! s:InitializeGutenSyntax() abort
         for i in range(len(l:tags))
             let l:char = l:tags[i]
             if has_key(l:seen_tags, l:char)
-                echoerr printf("GutenSyntax: Tag collision! Character '%s' is defined in both '%s' and '%s'.", 
+                let g:gs_tag_collision = printf("GutenSyntax: Tag collision! Character '%s' is defined in both '%s' and '%s'.", 
                     \ l:char, l:seen_tags[l:char], l:group_name)
-                return  " Stop initialization if tags overlap
+                return 0
             endif
             let l:seen_tags[l:char] = l:group_name
         endfor
@@ -63,7 +64,14 @@ function! s:InitializeGutenSyntax() abort
             execute printf('highlight default link %s %s', l:group_name, l:link_target)
         endif
     endfor
+    return 1
 endfunction
+
+if !s:InitializeGutenSyntax()
+    let g:gs_syntax_error = 1
+else
+    let g:gs_syntax_error = 0
+endif
 
 augroup GutenSyntaxCleanup
     autocmd!
@@ -72,9 +80,10 @@ augroup END
 
 function! s:CleanupTmpDir() abort
     if g:gutensyntax_use_tmp != 1
-        finish
+        return
     endif
+    
     if exists('g:gs_syntax_tmp_dir') && isdirectory(g:gs_syntax_tmp_dir)
-        call job_start(['rm', '-rf', g:gs_syntax_tmp_dir])
+        call delete(g:gs_syntax_tmp_dir, 'rf')
     endif
 endfunction
