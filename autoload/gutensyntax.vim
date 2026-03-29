@@ -2,18 +2,6 @@
 " This function is called from a file ~/.vim/autoload/gutentags/ctags.vim
 " from function gutentags#ctags#on_job_exit()
 function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
-    if g:place_syntax_in_tmp == 1
-        let l:seed = localtime() + getpid()
-        let g:syntax_tmp_dir = '/tmp/vim-' . rand(srand(l:seed))
-        if !isdirectory(g:syntax_tmp_dir)
-            call mkdir(g:syntax_tmp_dir, "p", 0700)
-        endif
-    endif
-    "
-    "
-    "
-    "
-    "
     let l:syntax_file = g:local_syntax_file
     let l:tag_file_size = getfsize(a:src_tags_file)
     if l:tag_file_size == -1
