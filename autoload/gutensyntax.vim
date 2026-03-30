@@ -2,12 +2,18 @@
 " This function is called from a file ~/.vim/autoload/gutentags/ctags.vim
 " from function gutentags#ctags#on_job_exit()
 function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
-    if g:gs_syntax_error == 1
-        call gutentags#error(g:gs_tag_collision)
+    if g:gs_err_flag == 1
+        for l:msg in g:gs_err_list
+            call gutentags#error(l:msg)
+        endfor
         return
     endif
 
-    if g:gutentags_use_tmp == 1
+    if g:gutensyntax_enable != 1
+        return
+    endif
+
+    if g:gutensyntax_use_tmp == 1
         let l:base_dir = g:gs_syntax_tmp_dir
     else
         let l:base_dir = a:path
@@ -15,7 +21,7 @@ function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
 
     let l:exec_list = []
 
-    for l:def in g:gutentags_syntax_defs
+    for l:def in g:gutensyntax_syntax_defs
         let [l:group, l:tags, l:file_name] = l:def
         "let l:group = l:def[0]
         "let l:tags = l:def[1]
@@ -45,14 +51,6 @@ function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
     endfor
 endfunction
 
-    "let l:cmd = 'export LC_ALL=C ; echo "syntax clear MyCustomCType" > ' . l:full_path_syn_file . ' ; echo "syntax clear MyCustomCMacro" >> ' . l:full_path_syn_file . ' ; set -o pipefail; sed -En "s/^([^\t]+)[[:space:]].*[[:space:]][tsgu]([[:space:]]|$).*$/syntax keyword MyCustomCType \1/p ; s/^([^\t]+)[[:space:]].*[[:space:]][de]([[:space:]]|$).*$/syntax keyword MyCustomCMacro \1/p" ' . a:src_tags_file . ' | sort -u >> ' . l:full_path_syn_file
-        
-    "call job_start(['/bin/sh', '-c', l:cmd], { 
-    "    \'exit_cb': 'gutensyntax#SyntaxUpdateCB',
-    "    \'out_cb': 'gutentags#default_stdout_cb',
-    "    \'err_cb': 'gutentags#default_stderr_cb',
-    "    \'stoponexit': 'term'
-    "	\})
 
 " Callback from job_start functiin (job is pid of process, status is number
 " returned from pipe l:cmd = 'set -o pipefail; sed -En ... | sort -u > ...
