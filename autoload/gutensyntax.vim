@@ -13,11 +13,19 @@ function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
         return
     endif
 
-    if g:gutensyntax_use_tmp == 1
-        let l:base_dir = g:gs_syntax_tmp_dir
-    else
-        let l:base_dir = a:path
+    " Create uniq tmp dir if you use /tmp
+    if g:gs_tmp_was_created != 1
+        if g:gutensyntax_use_tmp == 1
+            if !isdirectory(g:gs_syntax_tmp_dir)
+                call mkdir(g:gs_syntax_tmp_dir, "p", 0700)
+                let l:base_dir = g:gs_syntax_tmp_dir
+                let g:gs_tmp_was_created = 1
+            endif
+        else
+            let l:base_dir = a:path
+        endif
     endif
+
 
     let l:exec_list = []
 

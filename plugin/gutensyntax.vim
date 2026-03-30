@@ -26,19 +26,18 @@ endif
 " of the variable's contents
 if !exists('g:gutensyntax_use_tmp')
     let g:gutensyntax_use_tmp = 1 " Default value
-elseif type(g:gutensyntax_use_tmp) != 0
+elseif type(g:gutensyntax_use_tmp) != v:t_number
     let s:err_msg = printf("GuteSyntax: g:gutensyntax_use_tmp may be 0 or 1, now is: %s", g:gutensyntax_use_tmp)
     call add(g:gs_err_list, s:err_msg)
     let g:gs_err_flag = 1
     let g:gutensyntax_use_tmp = 0
 endif
 
+let g:gs_tmp_was_created = 0
+
 " Create uniq tmp dir if you use /tmp
 if g:gutensyntax_use_tmp == 1 && g:gutensyntax_enable == 1
     let g:gs_syntax_tmp_dir = '/tmp/vim-gutensyntax-' . getpid()
-    if !isdirectory(g:gs_syntax_tmp_dir)
-        call mkdir(g:gs_syntax_tmp_dir, "p", 0700)
-    endif
 endif
 
 " Set Default Configuration if not defined in .vimrc
@@ -56,6 +55,8 @@ function! s:InitializeGutenSyntax() abort
         return 1
     endif
     let l:seen_tags = {}
+    let l:seen_groups = {}
+    let l:valid_kinds = 'fvdstugempxzicnk' " Valid C/C++ tags from ctags
 
     for l:def in g:gutensyntax_syntax_defs
         " Structural Validation
@@ -63,32 +64,49 @@ function! s:InitializeGutenSyntax() abort
             let s:err_msg = printf("GutenSyntax: Invalid definition in g:gutensyntax_syntax_defs\n Expected [GroupName, Tags, LinkGroup]")
             call add(g:gs_err_list, s:err_msg)
             let g:gs_err_flag = 1
-            return 0
         endif
 
-        let l:group_name = l:def[0]
-        let l:tags       = l:def[1]
-        let l:link_target = l:def[2]
+        let [l:group_name, l:tags, l:link] = l:def
+
+        " Check group name collision
+        if has_key(l:seen_groups, l:group_name)
+            let s:err_msg = printf("GutenSyntax: Duplicate Group Name '%s'!", l:group_name)
+            call add(g:gs_err_list, s:err_msg)
+            let g:gs_err_flag = 1
+        endif
+        let l:seen_groups[l:group_name] = 1
 
         " Collision Check for Tags
         for i in range(len(l:tags))
             let l:char = l:tags[i]
+
+            " Check valid tag
+            if stridx(l:valid_kinds, l:char) == -1
+                let s:err_msg = printf("GutenSyntax: Invalid Ctags tag '%s' in group '%s'.", l:char, l:group_name)
+                call add(g:gs_err_list, s:err_msg)
+                let g:gs_err_flag = 1
+            endif
+
+            " Check for tag collision
             if has_key(l:seen_tags, l:char)
                 let s:err_msg = printf("GutenSyntax: Tag collision! Character '%s' is defined in both '%s' and '%s'.", 
                     \ l:char, l:seen_tags[l:char], l:group_name)
                 call add(g:gs_err_list, s:err_msg)
                 let g:gs_err_flag = 1
-                return 0
             endif
             let l:seen_tags[l:char] = l:group_name
         endfor
 
+        if g:gs_err_flag == 1
+            return
+        endif
+
         " Apply Highlighting
-        if !empty(l:group_name) && !empty(l:link_target)
-            execute printf('highlight default link %s %s', l:group_name, l:link_target)
+        if !empty(l:group_name) && !empty(l:link)
+            execute printf('highlight default link %s %s', l:group_name, l:link)
         endif
     endfor
-    return 1
+    return
 endfunction
 
 call s:InitializeGutenSyntax()
@@ -99,10 +117,6 @@ augroup GutenSyntaxCleanup
 augroup END
 
 function! s:CleanupTmpDir() abort
-    if g:gutensyntax_use_tmp != 1 || g:gutensyntax_enable != 1
-        return
-    endif
-    
     if exists('g:gs_syntax_tmp_dir') && isdirectory(g:gs_syntax_tmp_dir)
         call delete(g:gs_syntax_tmp_dir, 'rf')
     endif
