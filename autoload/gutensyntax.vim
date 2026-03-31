@@ -14,18 +14,27 @@ function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
     endif
 
     " Create uniq tmp dir if you use /tmp
-    if g:gs_tmp_was_created != 1
-        if g:gutensyntax_use_tmp == 1
-            if !isdirectory(g:gs_syntax_tmp_dir)
-                call mkdir(g:gs_syntax_tmp_dir, "p", 0700)
-                let l:base_dir = g:gs_syntax_tmp_dir
-                let g:gs_tmp_was_created = 1
-            endif
+    if g:gs_tmp_was_created != 1 && g:gutensyntax_use_tmp == 1
+        let l:hash = sha256(a:path)[0:12]
+        let g:gs_syntax_base_dir = '/tmp/vim-gutensyntax-' . l:hash
+        if !isdirectory(g:gs_syntax_base_dir)
+            call mkdir(g:gs_syntax_base_dir, "p", 0700)
+            let g:gs_tmp_was_created = 1
         else
-            let l:base_dir = a:path
+            let g:gs_tmp_was_created = 1
         endif
+    elseif g:gutensyntax_use_tmp == 0
+        let g:gs_syntax_base_dir = a:path
+        let g:gs_tmp_was_created = 1
     endif
 
+
+    if !exists('g:gs_pid_file')
+        let g:gs_pid_file = g:gs_syntax_base_dir . '/' . getpid() . '.pid'
+        if !filereadable(g:gs_pid_file)
+            call writefile([], g:gs_pid_file)
+        endif
+    endif
 
     let l:exec_list = []
 
@@ -35,7 +44,7 @@ function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
         "let l:tags = l:def[1]
         "let l:link = l:def[2]
 
-        let l:filename = printf('%s/%s.vim', l:base_dir, l:group)
+        let l:filename = printf('%s/%s.vim', g:gs_syntax_base_dir, l:group)
 
         call add(l:exec_list, [l:group, l:tags, l:filename])
     endfor
@@ -45,8 +54,7 @@ function! gutensyntax#UpdateSyntaxFromTags(src_tags_file, path) abort
         let [l:grp, l:tg, l:fname] = l:item
 
         " Build specific shell command for group
-        let l:cmd = printf('export LC_ALL=C; echo "syntax clear %s > %s"; ' .
-            \ 'sed -En "s/^([^\t]+)[[:space:]].*[[:space:]][%s]([[:space:]]|$).*$/syntax keyword %s \1/p" %s | sort -u >> %s',
+        let l:cmd = printf('export LC_ALL=C; echo "syntax clear %s" > %s ; sed -En "s/^([^\t]+)[[:space:]].*[[:space:]][%s]([[:space:]]|$).*$/syntax keyword %s \1/p" %s | sort -u >> %s',
             \ l:grp, l:fname, l:tg, l:grp, a:src_tags_file, l:fname)
 
         " Start the job and pass the filename to the callback

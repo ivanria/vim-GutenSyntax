@@ -35,11 +35,6 @@ endif
 
 let g:gs_tmp_was_created = 0
 
-" Create uniq tmp dir if you use /tmp
-if g:gutensyntax_use_tmp == 1 && g:gutensyntax_enable == 1
-    let g:gs_syntax_tmp_dir = '/tmp/vim-gutensyntax-' . getpid()
-endif
-
 " Set Default Configuration if not defined in .vimrc
 if !exists('g:gutensyntax_syntax_defs') && g:gutensyntax_enable == 1
     let g:gutensyntax_syntax_defs = [
@@ -117,7 +112,55 @@ augroup GutenSyntaxCleanup
 augroup END
 
 function! s:CleanupTmpDir() abort
-    if exists('g:gs_syntax_tmp_dir') && isdirectory(g:gs_syntax_tmp_dir)
-        call delete(g:gs_syntax_tmp_dir, 'rf')
+    " If we are not in the project
+    if !exists('g:gs_syntax_base_dir')
+        return
+    endif
+
+    if !isdirectory(g:gs_syntax_base_dir)
+        echoerr "GutenSyntax: " . g:gs_syntax_base_dir . " is not directory"
+        return
+    endif
+
+    " Remoove itself pid file
+    if exists('g:gs_pid_file') && filereadable(g:gs_pid_file)
+        call delete(g:gs_pid_file)
+    endif
+
+    " Check if exist another placeholder file in directory
+    let l:remaining_files = globpath(g:gs_syntax_base_dir, '*.pid', 0, 1)
+    let l:active_others = 0
+
+    for l:file in l:remaining_files
+        if l:file =~ '^\d\+\.pid$'
+            let l:other_pid = fnamemodify(l:file, ':t:r')
+            " If the process still exists
+            if isdirectory('/proc/' . l:other_pid)
+                let l:active_others += 1
+            else
+                " The process does not exist
+                call delete(l:file)
+            endif
+        else
+            continue
+        endif
+    endfor
+
+    " If we are tha LAST session
+    if l:active_others == 0
+        if g:gutensyntax_use_tmp == 1
+            if g:gs_syntax_base_dir =~ 'vim-gutentags' && g:gs_syntax_base_dir != '/'
+                call delete(g:gs_syntax_base_dir, 'rf')
+            endif
+        else " We are not in tmp
+            let l:syntax_files = globpath(g:gs_syntax_base_dir, '*.vim', 0, 1)
+            for l:sfile in l:syntax_files
+                for l:def in g:gutensyntax_syntax_defs
+                    if fnamemodify(l:sfile, ':t:r') == l:def[0]
+                        call delete(l:sfile)
+                    endif
+                endfor
+            endfor
+        endif
     endif
 endfunction
