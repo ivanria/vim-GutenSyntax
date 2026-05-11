@@ -3,6 +3,8 @@
 
 **vim-GutenSyntax** is an automated, asynchronous syntax highlighting extension for Vim 9.1+. It is a specialized fork of [vim-gutentags](https://github.com) by Ludovic Chabant.
 
+I just can't finish it, there's just a little bit left, right now the syntax files are already being generated in RAM (/tmp)
+
 While the original Gutentags focuses on tag-based navigation, **GutenSyntax** leverages those tags to dynamically generate and apply syntax highlighting for your project's custom `struct`, `union`, `enum`, `typedef`, and `#define` declarations.
 
 ## Key Features
